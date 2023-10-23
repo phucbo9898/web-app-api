@@ -24,5 +24,6 @@ Route::group([
     'prefix' => 'v1/auth'
 ], function () {
     Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/get-info', [AuthController::class, 'getInfo']);
+    Route::get('/refresh', [AuthController::class, 'refreshToken']);
+    Route::get('/get-info', [AuthController::class, 'getInfo'])->middleware('jwtauth');
 });
