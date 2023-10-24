@@ -37,7 +37,14 @@ class AuthController extends Controller
         ]);
     }
 
-    public function getInfo() {
+    public function getInfo()
+    {
         return Auth::user();
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return $this->getResponse(true, 'logout_success', 200);
     }
 }
