@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function __construct()
+    public function __construct(UserRepository $userRepository)
     {
         $this->middleware('jwtauth.refresh', ['only' => ['refreshToken']]);
+        $this->userRepository = $userRepository;
     }
 
     public function login(Request $request)
@@ -46,5 +50,21 @@ class AuthController extends Controller
     {
         Auth::logout();
         return $this->getResponse(true, 'logout_success', 200);
+    }
+
+    public function register(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $userInfo = $this->userRepository->prepareRegister($data);
+            $this->userRepository->create($userInfo);
+            DB::commit();
+            return $this->getResponse(true, 'REGISTER_SUCCESS', 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::debug($e);
+            return $this->getResponse(false, 'REGISTER_ERROR', 401);
+        }
     }
 }
