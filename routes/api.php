@@ -27,4 +27,5 @@ Route::group([
     Route::get('/refresh', [AuthController::class, 'refreshToken']);
     Route::get('/get-info', [AuthController::class, 'getInfo'])->middleware('jwtauth');
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/register', [AuthController::class, 'register']);
 });
