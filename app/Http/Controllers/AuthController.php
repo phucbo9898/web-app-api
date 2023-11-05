@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\StoreRequest;
+use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,17 +56,22 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $checkExistEmail = User::where('email', 'like', '%' . escape_like($request['email']) . '%')->first();
+        if (!empty($checkExistEmail)) {
+            return $this->getResponse(false, 'email_already_exists', 401);
+        }
+
         try {
             DB::beginTransaction();
             $data = $request->all();
             $userInfo = $this->userRepository->prepareRegister($data);
             $this->userRepository->create($userInfo);
             DB::commit();
-            return $this->getResponse(true, 'REGISTER_SUCCESS', 200);
+            return $this->getResponse(true, 'register_success', 200);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::debug($e);
-            return $this->getResponse(false, 'REGISTER_ERROR', 401);
+            return $this->getResponse(false, 'register_error', 401);
         }
     }
 }
