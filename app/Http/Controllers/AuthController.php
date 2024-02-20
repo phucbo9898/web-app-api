@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\User\StoreRequest;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +27,6 @@ class AuthController extends Controller
         } else {
             return $this->getResponse(true, 'Login success', 200, [
                 'token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL(),
                 'user_id' => Auth::id()
             ]);
         }
@@ -41,11 +39,6 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 24 * 7, // after 1 week expired token
         ]);
-    }
-
-    public function getInfo()
-    {
-        return Auth::user();
     }
 
     public function logout()

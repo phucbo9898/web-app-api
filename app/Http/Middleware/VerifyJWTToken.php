@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use JWTAuth;
@@ -36,6 +37,7 @@ class VerifyJWTToken
             }
         } catch (TokenExpiredException $exception) {
             try {
+                Auth::logout();
                 return response()->json([
                     'status' => false,
                     'status_code' => 'TOKEN_EXPIRED',
