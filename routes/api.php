@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UserSettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,17 +17,25 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-//Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'v1/auth'
-], function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/refresh', [AuthController::class, 'refreshToken']);
-    Route::get('/get-info', [AuthController::class, 'getInfo'])->middleware('jwtauth');
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/register', [AuthController::class, 'register']);
+Route::group(['middleware' => 'api','prefix' => 'v1'], function () {
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::get('/refresh', [AuthController::class, 'refreshToken']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::middleware('jwtauth')->group(function () {
+            Route::patch('/fcm-token', [NotificationController::class, 'updateToken'])->name('fcmToken');
+            Route::post('/send-notification',[NotificationController::class,'notification'])->name('notification');
+        });
+    });
+    Route::group(['middleware' => 'jwtauth','prefix' => 'members/me'], function () {
+        Route::post('/user-infor/change-password', [UserSettingController::class, 'changePassword']);
+        Route::post('/user-infor/change-email', [UserSettingController::class, 'changeEmail']);
+        Route::get('/user-profile', [UserSettingController::class, 'getProfile']);
+        Route::post('/update-profile', [UserSettingController::class, 'updateProfile']);
+    });
+    Route::get('verify-email/{id}', [UserSettingController::class, 'verifyChangeEmail']);
+    Route::post('upload-image', [UserSettingController::class, 'upload']);
 });
+
+
