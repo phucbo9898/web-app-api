@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use JWTAuth;
@@ -36,13 +37,16 @@ class VerifyJWTToken
                 }
             }
         } catch (TokenExpiredException $exception) {
+            Log::debug('TokenExpiredException: ' . $exception->getMessage());
             try {
-                Auth::logout();
+//                Auth::logout();
                 return response()->json([
                     'status' => false,
                     'status_code' => 'TOKEN_EXPIRED',
                 ], 401);
             } catch (JWTException $e) {
+                Log::debug('JWTException: ' . $e->getMessage());
+//                Auth::logout();
                 return response()->json([
                     'status' => false,
                     'status_code' => 'INVALID_TOKEN',
@@ -50,6 +54,8 @@ class VerifyJWTToken
             }
         }
         catch (JWTException $e) {
+            Log::debug('JWTException: ' . $e->getMessage());
+//            Auth::logout();
             return response()->json([
                 'status' => false,
                 'status_code' => 'INVALID_TOKEN',

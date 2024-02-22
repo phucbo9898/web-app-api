@@ -55,6 +55,9 @@ class UserSettingController extends Controller
                 $uploadImage = app('firebase.firestore')->database()->collection('test')->document(Str::random(40) . '.' . $type);
                 $firebase_storage_path = 'test/';
                 $name = $uploadImage->id();
+                if (!file_exists(public_path('firebase-temp-uploads'))) {
+                    mkdir(public_path('firebase-temp-uploads'), 0770);
+                }
                 $localfolder = public_path('firebase-temp-uploads') .'/';
                 $file = $name. '.' . $type;
                 if (file_put_contents($localfolder . $file, $base64)) {
