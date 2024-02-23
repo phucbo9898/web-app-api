@@ -33,9 +33,12 @@ Route::group(['middleware' => 'api','prefix' => 'v1'], function () {
         Route::post('/user-infor/change-email', [UserSettingController::class, 'changeEmail']);
         Route::get('/user-profile', [UserSettingController::class, 'getProfile']);
         Route::post('/update-profile', [UserSettingController::class, 'updateProfile']);
+        Route::post('/update-setting-language', [UserSettingController::class, 'updateLanguage']);
     });
     Route::get('verify-email/{id}', [UserSettingController::class, 'verifyChangeEmail']);
     Route::post('upload-image', [UserSettingController::class, 'upload']);
+    Route::get('/get-slide', [NotificationController::class, 'getSlide']);
+    Route::get('/get-categories', [NotificationController::class, 'getCategories']);
 });
 
 

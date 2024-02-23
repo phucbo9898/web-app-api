@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Categories;
+use App\Models\Slide;
 use App\Models\User;
 use App\Notifications\SendPushNotification;
 use Illuminate\Http\Request;
@@ -23,6 +25,18 @@ class NotificationController extends Controller
     public function __construct()
     {
         $this->notification = Firebase::messaging();
+    }
+
+    public function getSlide()
+    {
+        $slides = Slide::all();
+        return $slides;
+    }
+
+    public function getCategories()
+    {
+        $categories = Categories::all();
+        return $categories;
     }
 
     public function updateToken(Request $request)
