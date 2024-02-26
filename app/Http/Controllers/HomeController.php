@@ -43,4 +43,27 @@ class HomeController extends Controller
 
         return $this->getResponse(true, 'Update setting language success', 200, $data);
     }
+
+    public function getListArticles()
+    {
+        $articles = Article::with([
+            'user' => function ($subQ) {
+                return $subQ->where('status', 'active')->whereNull('deleted_at')->select(['users.id', 'users.name']);
+            }
+        ])->where('status', 'active')->whereNull('deleted_at')->get();
+        return $this->getResponse(true, 'Update setting language success', 200, $articles);
+    }
+
+    public function getDetailArticle($id, Request $request)
+    {
+        $article = Article::with([
+            'user' => function ($subQ) {
+                return $subQ->where('status', 'active')->whereNull('deleted_at')->select(['users.id', 'users.name']);
+            }
+        ])->where(['status' => 'active','id' => $id])->first();
+        if (empty($article)) {
+            return $this->getResponse(false, 'failed', 422);
+        }
+        return $this->getResponse(true, 'Update setting language success', 200, $article);
+    }
 }

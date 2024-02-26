@@ -41,6 +41,8 @@ Route::group(['middleware' => 'api','prefix' => 'v1'], function () {
     Route::get('/get-slide', [NotificationController::class, 'getSlide']);
     Route::get('/get-categories', [NotificationController::class, 'getCategories']);
     Route::get('/get-data-home', [HomeController::class, 'getDataHome']);
+    Route::get('/get-articles', [HomeController::class, 'getListArticles']);
+    Route::get('/get-detail-article/{id}', [HomeController::class, 'getDetailArticle']);
 });
 
 
