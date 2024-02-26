@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categories;
+use App\Models\Category;
 use App\Models\Slide;
 use App\Models\User;
 use App\Notifications\SendPushNotification;
@@ -35,7 +35,7 @@ class NotificationController extends Controller
 
     public function getCategories()
     {
-        $categories = Categories::all();
+        $categories = Category::all();
         return $categories;
     }
 

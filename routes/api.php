@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -39,6 +40,7 @@ Route::group(['middleware' => 'api','prefix' => 'v1'], function () {
     Route::post('upload-image', [UserSettingController::class, 'upload']);
     Route::get('/get-slide', [NotificationController::class, 'getSlide']);
     Route::get('/get-categories', [NotificationController::class, 'getCategories']);
+    Route::get('/get-data-home', [HomeController::class, 'getDataHome']);
 });
 
 
