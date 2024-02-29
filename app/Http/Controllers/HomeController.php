@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\FavoriteProduct;
 use App\Models\Product;
 use App\Models\Slide;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class HomeController extends Controller
 {
@@ -44,16 +48,6 @@ class HomeController extends Controller
         return $this->getResponse(true, 'Update setting language success', 200, $data);
     }
 
-    public function getListArticles()
-    {
-        $articles = Article::with([
-            'user' => function ($subQ) {
-                return $subQ->where('status', 'active')->whereNull('deleted_at')->select(['users.id', 'users.name']);
-            }
-        ])->where('status', 'active')->whereNull('deleted_at')->get();
-        return $this->getResponse(true, 'Update setting language success', 200, $articles);
-    }
-
     public function getDetailArticle($id, Request $request)
     {
         $article = Article::with([
@@ -65,5 +59,97 @@ class HomeController extends Controller
             return $this->getResponse(false, 'failed', 422);
         }
         return $this->getResponse(true, 'Update setting language success', 200, $article);
+    }
+
+    public function getListFavorite()
+    {
+        $lstFavorite = Auth::user()->favoriteProduct;
+        if (count($lstFavorite) <= 0) {
+            return $this->getResponse(false, 'failed', 422);
+        }
+        return $this->getResponse(true, 'Get data success', 200, $lstFavorite);
+    }
+
+    public function removeFavoriteProduct(Request $request)
+    {
+        try {
+            $productId = $request->get('productId');
+            $getProductById = Product::where([
+                'id' => $productId,
+                'status' => 'active'
+            ])->whereNull('deleted_at')->first();
+            if (empty($getProductById)) {
+                return $this->getResponse(false, 'data failed', 422);
+            }
+
+            FavoriteProduct::where([
+                'user_id' => Auth::id(),
+                'product_id' => $productId
+            ])->delete();
+            return $this->getResponse(true, 'Remove success');
+        } catch (\Exception $exception) {
+            Log::debug($exception->getMessage());
+            return $this->getResponse(false, 'Remove failed', 500);
+        }
+    }
+
+    public function getDetailProduct($id, Request $request)
+    {
+        $product = Product::where([
+            'id' => $id,
+            'status' => 'active'
+        ])->with([
+            'productAttributeValue' => function ($subQ) {
+                $subQ->select(['attribute_value.attribute_id', 'attribute_value.value'])->with([
+                    'attribute' => function ($subQ1) {
+                        return $subQ1->select(['attributes.id', 'attributes.name']);
+                    }
+                ]);
+            }
+        ])->first();
+
+        if (empty($product)) {
+            return $this->getResponse(false, 'failed', 422);
+        }
+        return $this->getResponse(true, 'get product detail success', 200, $product);
+    }
+
+    public function getListArticles()
+    {
+        $articles = Article::with([
+            'user' => function ($subQ) {
+                return $subQ->where('status', 'active')->whereNull('deleted_at')->select(['users.id', 'users.name']);
+            }
+        ])->where('status', 'active')->whereNull('deleted_at')->get();
+        return $this->getResponse(true, 'Update setting language success', 200, $articles);
+    }
+
+    public function addFavoriteProduct(Request $request, $id)
+    {
+        try {
+            $checkExistFavoriteProduct = FavoriteProduct::where([
+                'product_id' => $id,
+                'user_id' => Auth::id()
+            ])->first();
+
+            if (!empty($checkExistFavoriteProduct)) {
+                return $this->getResponse(true, 'Sản phẩm đã tồn tại trong danh sách sản phẩm ưa thích của bạn!', 200, [
+                    'status' => 422,
+                    'message' => 'Sản phẩm đã tồn tại trong danh sách sản phẩm ưa thích của bạn!'
+                ]);
+            }
+
+            FavoriteProduct::create([
+                'product_id' => $id,
+                'user_id' => Auth::id()
+            ]);
+            return $this->getResponse(true, 'Thành công! Đã thêm sản phẩm vào sản phẩm yêu thích của bạn!', 200, [
+                'status' => 200,
+                'message' => 'Thành công! Đã thêm sản phẩm vào sản phẩm yêu thích của bạn!'
+            ]);
+        } catch (\Exception $exception) {
+            Log::debug($exception->getMessage());
+            return $this->getResponse(false, 'Thêm sản phẩm yêu thích thất bại', 500);
+        }
     }
 }

@@ -62,4 +62,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return UserType::getUserType($this->role);
     }
+
+    public function favoriteProduct()
+    {
+        return $this->belongsToMany(Product::class, 'favorite_product', 'user_id', 'product_id')->whereNull('favorite_product.deleted_at');
+    }
 }

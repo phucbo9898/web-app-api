@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class AttributeValue extends Model
 {
     use HasFactory;
+    protected $table = 'attribute_value';
     protected $guarded = [];
 
-    public function productAttributeValue()
+    public function attribute()
     {
-        return $this->belongsToMany(AttributeValue::class, 'product_attribute', 'product_id', 'attribute_value_id');
+        return $this->belongsTo(Attribute::class, 'attribute_id');
     }
 }
