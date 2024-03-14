@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserDeviceToken;
 use App\Repositories\UserRepository;
+use App\Services\FirebasePushNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +15,16 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function __construct(UserRepository $userRepository)
+    protected $firebasePushNotificationService;
+    protected $userRepository;
+    public function __construct(
+        UserRepository $userRepository,
+        FirebasePushNotificationService $firebasePushNotificationService
+    )
     {
         $this->middleware('jwtauth.refresh', ['only' => ['refreshToken']]);
         $this->userRepository = $userRepository;
+        $this->firebasePushNotificationService = $firebasePushNotificationService;
     }
 
     public function login(Request $request)

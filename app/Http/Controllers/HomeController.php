@@ -48,6 +48,18 @@ class HomeController extends Controller
         return $this->getResponse(true, 'Update setting language success', 200, $data);
     }
 
+    public function getSlide()
+    {
+        $slides = Slide::all();
+        return $slides;
+    }
+
+    public function getCategories()
+    {
+        $categories = Category::all();
+        return $categories;
+    }
+
     public function getDetailArticle($id, Request $request)
     {
         $article = Article::with([

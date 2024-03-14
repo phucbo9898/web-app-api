@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ChangeEmailMail;
 use App\Models\User;
+use App\Models\UserDeviceToken;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -234,6 +235,30 @@ class UserSettingController extends Controller
             }
         } catch (\Exception $exception) {
             Log::debug($exception->getMessage());
+        }
+    }
+
+    public function updateToken(Request $request)
+    {
+        try {
+            $getTokenByUserLog = UserDeviceToken::where([
+                'user_id' => Auth::id(),
+                'device_token' => $request->token
+            ])->first();
+            if (empty($getTokenByUserLog)) {
+                $request->user()->UserDeviceTokens()->create([
+                    'device_token' => $request->token,
+                    'updated_at' => Carbon::now()
+                ]);
+                return response()->json([
+                    'message' => 'Update device token success'
+                ]);
+            }
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'message' => 'Update device token failed'
+            ], 500);
         }
     }
 }

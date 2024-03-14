@@ -67,4 +67,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Product::class, 'favorite_product', 'user_id', 'product_id')->whereNull('favorite_product.deleted_at');
     }
+    public function UserDeviceTokens()
+    {
+        return $this->hasMany(UserDeviceToken::class, 'user_id', 'id');
+    }
+
 }

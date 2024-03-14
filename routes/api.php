@@ -18,39 +18,50 @@ use App\Http\Controllers\UserSettingController;
 |
 */
 
-Route::group(['middleware' => 'api','prefix' => 'v1'], function () {
-    Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::get('/refresh', [AuthController::class, 'refreshToken']);
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::middleware('jwtauth')->group(function () {
-            Route::patch('/fcm-token', [NotificationController::class, 'updateToken'])->name('fcmToken');
-            Route::post('/send-notification',[NotificationController::class,'notification'])->name('notification');
-            Route::get('/add-product-to-cart/{id}', [HomeController::class, 'addProduct']);
-            Route::get('add-favorite-product/{id}', [HomeController::class, 'addFavoriteProduct']);
+Route::prefix('v1')->group(function () {
+    Route::controller(AuthController::class)->group(function () {
+        Route::prefix('auth')->group(function () {
+            Route::post('/login', [AuthController::class, 'login']);
+            Route::get('/refresh', [AuthController::class, 'refreshToken']);
+            Route::post('/register', [AuthController::class, 'register']);
+            Route::post('/logout', [AuthController::class, 'logout'])->middleware('jwtauth');
         });
     });
-    Route::middleware('jwtauth')->group(function () {
-        Route::prefix('members/me')->group(function () {
-            Route::post('/user-infor/change-password', [UserSettingController::class, 'changePassword']);
-            Route::post('/user-infor/change-email', [UserSettingController::class, 'changeEmail']);
-            Route::get('/user-profile', [UserSettingController::class, 'getProfile']);
-            Route::post('/update-profile', [UserSettingController::class, 'updateProfile']);
-            Route::post('/update-setting-language', [UserSettingController::class, 'updateLanguage']);
-        });
 
-        Route::get('/get-list-favorite', [HomeController::class, 'getListFavorite']);
-        Route::post('remove-favorite-product', [HomeController::class, 'removeFavoriteProduct']);
+    // start example push notification from back-end to front-end
+    Route::middleware('jwtauth')->group(function () {
+        Route::post('/send-notification',[NotificationController::class,'notification']);
     });
-    Route::get('verify-email/{id}', [UserSettingController::class, 'verifyChangeEmail']);
-    Route::post('upload-image', [UserSettingController::class, 'upload']);
-    Route::get('/get-slide', [NotificationController::class, 'getSlide']);
-    Route::get('/get-categories', [NotificationController::class, 'getCategories']);
-    Route::get('/get-data-home', [HomeController::class, 'getDataHome']);
-    Route::get('/get-articles', [HomeController::class, 'getListArticles']);
-    Route::get('/get-detail-article/{id}', [HomeController::class, 'getDetailArticle']);
-    Route::get('/get-detail-product/{id}', [HomeController::class, 'getDetailProduct']);
+    // end example push notification from back-end to front-end
+
+    Route::controller(UserSettingController::class)->group(function () {
+        Route::prefix('members/me')->group(function () {
+            Route::middleware('jwtauth')->group(function () {
+                Route::get('/user-profile', 'getProfile');
+                Route::post('/update-profile', 'updateProfile');
+                Route::post('/change-password', 'changePassword');
+                Route::post('/change-email', 'changeEmail');
+                Route::post('/update-setting-language', 'updateLanguage');
+                Route::patch('/update-device-token', 'updateToken');
+            });
+        });
+        Route::get('verify-email/{id}', 'verifyChangeEmail');
+    });
+
+    Route::controller(HomeController::class)->group(function () {
+        Route::get('/get-slide', 'getSlide');
+        Route::get('/get-categories', 'getCategories');
+        Route::get('/get-data-home', 'getDataHome');
+        Route::get('/get-articles', 'getListArticles');
+        Route::get('/get-detail-article/{id}', 'getDetailArticle');
+        Route::get('/get-detail-product/{id}', 'getDetailProduct');
+        Route::middleware('jwtauth')->group(function () {
+            Route::get('/get-list-favorite', 'getListFavorite');
+            Route::get('add-favorite-product/{id}', 'addFavoriteProduct');
+            Route::post('remove-favorite-product', 'removeFavoriteProduct');
+            Route::get('/add-product-to-cart/{id}', 'addProduct');
+        });
+    });
 });
 
 
