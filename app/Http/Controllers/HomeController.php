@@ -6,9 +6,11 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\FavoriteProduct;
 use App\Models\Product;
+use App\Models\Rating;
 use App\Models\Slide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -111,15 +113,32 @@ class HomeController extends Controller
             'id' => $id,
             'status' => 'active'
         ])->with([
-            'productAttributeValue' => function ($subQ) {
-                $subQ->select(['attribute_value.attribute_id', 'attribute_value.value'])->with([
+            'productAttributeValue' => function ($subQuery1) {
+                $subQuery1->select(['attribute_value.attribute_id', 'attribute_value.value'])->with([
                     'attribute' => function ($subQ1) {
                         return $subQ1->select(['attributes.id', 'attributes.name']);
                     }
                 ]);
+            },
+            'ratings' => function ($subQuery2) {
+                $subQuery2->select('ratings.*')->with([
+                    'user' => function ($subQ2) {
+                        return $subQ2->select(['users.id', 'users.email']);
+                    }
+                ]);
             }
         ])->first();
-
+        $product['avg_score'] = round($product->ratings->avg('number'), 1);
+        $rateFiveStar = Rating::where(['product_id' => $id,'number' => 5])->count();
+        $rateFourStar = Rating::where(['product_id' => $id,'number' => 4])->count();
+        $rateThreeStar = Rating::where(['product_id' => $id,'number' => 3])->count();
+        $rateTwoStar = Rating::where(['product_id' => $id,'number' => 2])->count();
+        $rateOneStar = Rating::where(['product_id' => $id,'number' => 1])->count();
+        $product['rate_five_star'] = $rateFiveStar;
+        $product['rate_four_star'] = $rateFourStar;
+        $product['rate_three_star'] = $rateThreeStar;
+        $product['rate_two_star'] = $rateTwoStar;
+        $product['rate_one_star'] = $rateOneStar;
         if (empty($product)) {
             return $this->getResponse(false, 'failed', 422);
         }
