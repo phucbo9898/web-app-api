@@ -72,4 +72,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(UserDeviceToken::class, 'user_id', 'id');
     }
 
+    public function CartTemporary()
+    {
+        return $this->hasOne(CartTemporary::class, 'user_id', 'id');
+    }
+
 }

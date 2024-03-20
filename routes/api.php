@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserSettingController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +28,6 @@ Route::prefix('v1')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout'])->middleware('jwtauth');
         });
     });
-
     // start example push notification from back-end to front-end
     Route::middleware('jwtauth')->group(function () {
         Route::post('/send-notification',[NotificationController::class,'notification']);
@@ -46,6 +46,7 @@ Route::prefix('v1')->group(function () {
             });
         });
         Route::get('verify-email/{id}', 'verifyChangeEmail');
+        Route::get('verify-email/{id}', 'verifyChangeEmail');
     });
 
     Route::controller(HomeController::class)->group(function () {
@@ -60,6 +61,15 @@ Route::prefix('v1')->group(function () {
             Route::get('add-favorite-product/{id}', 'addFavoriteProduct');
             Route::post('remove-favorite-product', 'removeFavoriteProduct');
             Route::get('/add-product-to-cart/{id}', 'addProduct');
+        });
+    });
+
+    Route::prefix('cart')->group(function () {
+        Route::middleware('jwtauth')->group(function () {
+            Route::get('/list-product-in-cart', [CartController::class, 'getList']);
+            Route::post('/add-product-to-cart', [CartController::class, 'addProductToCart']);
+            Route::post('/get-voucher', [CartController::class, 'getVoucher']);
+            Route::post('/check-out', [CartController::class, 'checkout']);
         });
     });
 });
