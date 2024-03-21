@@ -76,8 +76,8 @@ class UserSettingController extends Controller
 //                $image->move(public_path($path_upload), $fileName);
             }
             User::where('id', Auth::id())->update([
-                'first_name' => $request->first_name ?? '',
-                'last_name' => $request->last_name ?? '',
+//                'first_name' => $request->first_name ?? '',
+//                'last_name' => $request->last_name ?? '',
                 'name' => $request->first_name . ' ' . $request->last_name,
                 'avatar' => $imageUrl ?? '',
                 'phone' => $request->phone ?? '',

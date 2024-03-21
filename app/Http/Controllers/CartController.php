@@ -18,14 +18,13 @@ class CartController extends Controller
     public function getList()
     {
         $lstProductInCart = CartTemporary::where('user_id', Auth::id())->first();
-        if (!empty($lstProductInCart)) {
-            return $lstProductInCart['product'];
-        }
+        return !empty($lstProductInCart) ? $lstProductInCart['product'] : [];
     }
 
     public function addProductToCart(Request $request)
     {
         try {
+            DB::beginTransaction();
             $productInformation = $request->get('products');
             $getCartTemporaryByUser = $request->user()->CartTemporary()->first();
             if (empty($getCartTemporaryByUser)) {
@@ -38,8 +37,10 @@ class CartController extends Controller
                     'product' => $productInformation
                 ]);
             }
-            return $this->getResponse(true, 'Add product to cart success', 200, json_decode($getCartTemporaryByUser['product'], true));
+            DB::commit();
+            return $this->getResponse(true, 'Add product to cart success', 200, json_decode($getCartTemporaryByUser['product'] ?? '', true));
         } catch (\Exception $exception) {
+            DB::rollBack();
             Log::debug($exception->getMessage());
             return $this->getResponse(false, 'Add product to cart failed', 500);
         }
@@ -104,6 +105,8 @@ class CartController extends Controller
                 }
                 TransactionDetail::insert($dataInsert);
             }
+            CartTemporary::where('user_id', Auth::id())->delete();
+
             DB::commit();
             return $this->getResponse(true, 'Đặt hàng thành công', 200);
         } catch (\Exception $exception) {
