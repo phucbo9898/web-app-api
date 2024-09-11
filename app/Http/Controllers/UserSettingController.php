@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ChangeEmailMail;
 use App\Models\User;
+use App\Models\UserDeviceToken;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,14 +60,14 @@ class UserSettingController extends Controller
                     mkdir(public_path('firebase-temp-uploads'), 0770);
                 }
                 $localfolder = public_path('firebase-temp-uploads') .'/';
-                $file = $name. '.' . $type;
-                if (file_put_contents($localfolder . $file, $base64)) {
-                    $uploadedfile = fopen($localfolder.$file, 'r');
+                if (file_put_contents($localfolder . $name, $base64)) {
+                    $uploadedfile = fopen($localfolder.$name, 'r');
                     $bucket = app('firebase.storage')->getBucket();
                     $bucket->upload($uploadedfile, ['name' => $firebase_storage_path . $name]);
                     $firebaseStorage = app('firebase.storage');
                     $fileRef = $firebaseStorage->getBucket()->object($firebase_storage_path . $name);
                     $imageUrl = $fileRef->signedUrl(strtotime(Carbon::now()->addYear(1000)));
+                    unlink($localfolder . $name);
                 }
 
 //                $fileName = Str::random(60) . '.' . $image->getClientOriginalExtension();
@@ -75,10 +76,12 @@ class UserSettingController extends Controller
 //                $image->move(public_path($path_upload), $fileName);
             }
             User::where('id', Auth::id())->update([
-                'name' => $request->name,
-//            'phone' => $request->phone,
-//            'address' => $request->address,
+//                'first_name' => $request->first_name ?? '',
+//                'last_name' => $request->last_name ?? '',
+                'name' => $request->first_name . ' ' . $request->last_name,
                 'avatar' => $imageUrl ?? '',
+                'phone' => $request->phone ?? '',
+                'address' => $request->address ?? '',
             ]);
 
             return $this->getResponse(true, 'Change profile success', 200, $getInfo);
@@ -86,6 +89,17 @@ class UserSettingController extends Controller
             Log::debug($exception->getMessage());
             return $this->getResponse(false, 'Change profile failed', 500);
         }
+    }
+
+    public function updateLanguage(Request $request)
+    {
+        $language = $request->get('language');
+        $user = User::where('id', Auth::id())->first();
+        if (empty($user)) {
+            return $this->getResponse(false, "Account error", 422);
+        }
+        User::where('id', Auth::id())->update(['setting_language' => $language]);
+        return $this->getResponse(true, 'Update setting language success', 200, $user);
     }
 
     public function changeEmail(Request $request)
@@ -221,6 +235,30 @@ class UserSettingController extends Controller
             }
         } catch (\Exception $exception) {
             Log::debug($exception->getMessage());
+        }
+    }
+
+    public function updateToken(Request $request)
+    {
+        try {
+            $getTokenByUserLog = UserDeviceToken::where([
+                'user_id' => Auth::id(),
+                'device_token' => $request->token
+            ])->first();
+            if (empty($getTokenByUserLog)) {
+                $request->user()->UserDeviceTokens()->create([
+                    'device_token' => $request->token,
+                    'updated_at' => Carbon::now()
+                ]);
+                return response()->json([
+                    'message' => 'Update device token success'
+                ]);
+            }
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'message' => 'Update device token failed'
+            ], 500);
         }
     }
 }

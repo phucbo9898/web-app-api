@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserSettingController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,25 +19,59 @@ use App\Http\Controllers\UserSettingController;
 |
 */
 
-Route::group(['middleware' => 'api','prefix' => 'v1'], function () {
-    Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::get('/refresh', [AuthController::class, 'refreshToken']);
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::middleware('jwtauth')->group(function () {
-            Route::patch('/fcm-token', [NotificationController::class, 'updateToken'])->name('fcmToken');
-            Route::post('/send-notification',[NotificationController::class,'notification'])->name('notification');
+Route::prefix('v1')->group(function () {
+    Route::controller(AuthController::class)->group(function () {
+        Route::prefix('auth')->group(function () {
+            Route::post('/login', [AuthController::class, 'login']);
+            Route::get('/refresh', [AuthController::class, 'refreshToken']);
+            Route::post('/register', [AuthController::class, 'register']);
+            Route::post('/logout', [AuthController::class, 'logout'])->middleware('jwtauth');
         });
     });
-    Route::group(['middleware' => 'jwtauth','prefix' => 'members/me'], function () {
-        Route::post('/user-infor/change-password', [UserSettingController::class, 'changePassword']);
-        Route::post('/user-infor/change-email', [UserSettingController::class, 'changeEmail']);
-        Route::get('/user-profile', [UserSettingController::class, 'getProfile']);
-        Route::post('/update-profile', [UserSettingController::class, 'updateProfile']);
+    // start example push notification from back-end to front-end
+    Route::middleware('jwtauth')->group(function () {
+        Route::post('/send-notification',[NotificationController::class,'notification']);
     });
-    Route::get('verify-email/{id}', [UserSettingController::class, 'verifyChangeEmail']);
-    Route::post('upload-image', [UserSettingController::class, 'upload']);
+    // end example push notification from back-end to front-end
+
+    Route::controller(UserSettingController::class)->group(function () {
+        Route::prefix('members/me')->group(function () {
+            Route::middleware('jwtauth')->group(function () {
+                Route::get('/user-profile', 'getProfile');
+                Route::post('/update-profile', 'updateProfile');
+                Route::post('/change-password', 'changePassword');
+                Route::post('/change-email', 'changeEmail');
+                Route::post('/update-setting-language', 'updateLanguage');
+                Route::patch('/update-device-token', 'updateToken');
+            });
+        });
+        Route::get('verify-email/{id}', 'verifyChangeEmail');
+        Route::get('verify-email/{id}', 'verifyChangeEmail');
+    });
+
+    Route::controller(HomeController::class)->group(function () {
+        Route::get('/get-slide', 'getSlide');
+        Route::get('/get-categories', 'getCategories');
+        Route::get('/get-data-home', 'getDataHome');
+        Route::get('/get-articles', 'getListArticles');
+        Route::get('/get-detail-article/{id}', 'getDetailArticle');
+        Route::get('/get-detail-product/{id}', 'getDetailProduct');
+        Route::middleware('jwtauth')->group(function () {
+            Route::get('/get-list-favorite', 'getListFavorite');
+            Route::get('add-favorite-product/{id}', 'addFavoriteProduct');
+            Route::post('remove-favorite-product', 'removeFavoriteProduct');
+            Route::get('/add-product-to-cart/{id}', 'addProduct');
+        });
+    });
+
+    Route::prefix('cart')->group(function () {
+        Route::middleware('jwtauth')->group(function () {
+            Route::get('/list-product-in-cart', [CartController::class, 'getList']);
+            Route::post('/add-product-to-cart', [CartController::class, 'addProductToCart']);
+            Route::post('/get-voucher', [CartController::class, 'getVoucher']);
+            Route::post('/check-out', [CartController::class, 'checkout']);
+        });
+    });
 });
 
 
