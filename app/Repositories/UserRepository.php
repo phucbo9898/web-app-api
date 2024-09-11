@@ -61,9 +61,9 @@ class UserRepository extends BaseRepository
             'address' => $data['address'] ?? '',
             'phone' => $data['phone'] ?? '',
             'email' => $data['email'] ?? '',
-            'password' => Hash::make($data['password']) ?? '',
+            'password' => Hash::make($data['password']) ?? Hash::make(123456),
             'avatar' => $data['image'] ?? '',
-            'role' => UserType::USER
+            'type' => $data['type'] ?? 'user'
         ];
 
         return $user;
