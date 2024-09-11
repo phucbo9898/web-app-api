@@ -24,6 +24,61 @@ Route::prefix('v1')->group(function () {
         Route::prefix('auth')->group(function () {
             Route::post('/login', [AuthController::class, 'login']);
             Route::get('/refresh', [AuthController::class, 'refreshToken']);
+
+            /**
+             * @QA\Post(
+             *   path="api/v1/auth/register",
+             *   summary="Create A User",
+             *   operationId="Create A User",
+             *   tags={"Auth"},
+             *   security={
+             *       {"ApiKeyAuth": {}}
+             *   },
+             *   @QA\Parameter(
+             *       name="name",
+             *       in="formData",
+             *       required=true,
+             *       type="string"
+             *   ),
+             *   @QA\Parameter(
+             *       name="email",
+             *       in="formData",
+             *       required=true,
+             *       type="string"
+             *   ),
+             *   @QA\Parameter(
+             *       name="role",
+             *       in="formData",
+             *       required=true,
+             *       type="string"
+             *   ),
+             *   @QA\Parameter(
+             *       name="status",
+             *       in="formData",
+             *       required=true,
+             *       type="string"
+             *   ),
+             *   @QA\Parameter(
+             *       name="password",
+             *       in="formData",
+             *       required=true,
+             *       type="string"
+             *   ),
+             *   @QA\Response(
+             *     response=200,
+             *     description="successful operation"
+             *   ),
+             *   @QA\Response(
+             *     response=406,
+             *     description="not acceptable"
+             *   ),
+             *   @QA\Response(
+             *     response=500,
+             *     description="internal server error
+             *   ")
+             * )
+             *
+             */
             Route::post('/register', [AuthController::class, 'register']);
             Route::post('/logout', [AuthController::class, 'logout'])->middleware('jwtauth');
         });

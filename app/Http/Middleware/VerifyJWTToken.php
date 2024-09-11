@@ -29,7 +29,7 @@ class VerifyJWTToken
                     'status_code' => 'INVALID_USER',
                 ], 401);
             } else {
-                if ($user->status != 'active') {
+                if ($user->active != 1) {
                     return response()->json([
                         'status' => false,
                         'status_code' => 'INVALID_STATUS_USER',

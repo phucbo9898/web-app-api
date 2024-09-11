@@ -16,6 +16,34 @@ use Illuminate\Support\Str;
 
 class UserSettingController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/members/me/user-profile",
+     *     tags={"Users"},
+     *     summary="Get list of users",
+     *     description="Returns list of users",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items()
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Not Found"
+     *     )
+     * )
+     */
     public function getProfile()
     {
         $user = User::where('id', Auth::id())->first();
